@@ -113,19 +113,20 @@ int main(int argc, char** argv)
 
     if (yaml_msg::fromYAMLFile(scene_msg, scene))
     {
-      scene_msg.name = scene;
+      scene_msg.name = fmt::format("scene{}", i);
     }
     if (yaml_msg::fromYAMLFile(scene_msg, scene_sensed))
     {
-      scene_msg.name = scene_sensed;
+      scene_msg.name = fmt::format("scene_sensed{}", i);
     }
     pss.addPlanningScene(scene_msg);
     if (yaml_msg::fromYAMLFile(request_msg, request) && yaml_msg::fromYAMLFile(trajectory_msg, trajectory))
     {
+      pss.addPlanningQuery(request_msg, scene_msg.name, scene_msg.name + "_query");
       pss.addPlanningResult(request_msg, trajectory_msg, scene);
     }
     std::cout << scene_msg.name << '\n' << scene_sensed << '\n' << request << '\n' << trajectory << std::endl;
-    std::cout << "========================================================================================="
+    std::cout << "================================================================================================="
               << std::endl;
   }
 
