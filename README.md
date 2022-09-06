@@ -4,7 +4,7 @@ This ROS 2 package converts Robowflex YAML files that represent benchmark motion
 
 A large number of pre-generated YAML files can be downloaded with [this script](https://github.com/KavrakiLab/motion_bench_maker/blob/main/problems/download.sh). Save this script as `download.sh` and run `chmod u+x download.sh && ./download.sh all`.
 
-## Building 
+## Building
 
 Compile the code like so:
 
