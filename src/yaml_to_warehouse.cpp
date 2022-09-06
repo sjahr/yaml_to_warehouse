@@ -45,6 +45,8 @@
 #include <moveit/warehouse/constraints_storage.h>
 #include <moveit/warehouse/state_storage.h>
 
+#include <rclcpp/rclcpp.hpp>
+
 #include <yaml_msg_convert.h>
 
 static const std::string ROBOT_DESCRIPTION = "robot_description";
@@ -127,6 +129,11 @@ int main(int argc, char** argv)
               << std::endl;
   }
 
-  rclcpp::spin(node);
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node);
+  std::thread([&executor]() { executor.spin(); }).join();
+
+  RCLCPP_INFO(LOGGER, "Shutting down.");
+  rclcpp::shutdown();
   return 0;
 }
