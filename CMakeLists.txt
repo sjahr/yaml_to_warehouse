@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.22)
 project(yaml_to_warehouse LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -46,4 +46,3 @@ ament_target_dependencies(yaml_to_warehouse
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 ament_package()
-
