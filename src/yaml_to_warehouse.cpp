@@ -45,6 +45,7 @@
 #include <moveit/warehouse/constraints_storage.h>
 #include <moveit/warehouse/state_storage.h>
 
+#include <warehouse_ros/database_connection.h>
 #include <rclcpp/rclcpp.hpp>
 
 #include <yaml_msg_convert.h>
@@ -69,7 +70,7 @@ int main(int argc, char** argv)
                     "Name of directory containing motion planning benchmarks.")
       ("num", boost::program_options::value<unsigned int>()->default_value(10u),
               "Number of motion planning benchmarks to process.")
-      ("host", boost::program_options::value<std::string>()->default_value("test.sqlite"), "Host for the DB.")
+      ("host", boost::program_options::value<std::string>()->default_value("/tmp/test_db.sqlite"), "Host for the DB.")
       ("port", boost::program_options::value<std::size_t>(), "Port for the DB.");
   // clang-format on
 
@@ -84,9 +85,12 @@ int main(int argc, char** argv)
   }
   // Set up db
   node->set_parameter(rclcpp::Parameter("warehouse_plugin", "warehouse_ros_sqlite::DatabaseConnection"));
+  if (vm.count("host"))
+  {
+    node->set_parameter(rclcpp::Parameter("warehouse_host", vm["host"].as<std::string>()));
+  }
+
   warehouse_ros::DatabaseConnection::Ptr conn = moveit_warehouse::loadDatabase(node);
-  if (vm.count("host") && vm.count("port"))
-    conn->setParams(vm["host"].as<std::string>(), vm["port"].as<std::size_t>());
   if (!conn->connect())
     return 1;
 
