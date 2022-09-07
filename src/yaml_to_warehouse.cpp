@@ -132,7 +132,7 @@ int main(int argc, char** argv)
 
   rclcpp::executors::SingleThreadedExecutor executor;
   executor.add_node(node);
-  std::thread([&executor]() { executor.spin(); }).join();
+  std::thread([&executor]() { executor.spin(); }).detach();
 
   RCLCPP_INFO(LOGGER, "Shutting down.");
   rclcpp::shutdown();
