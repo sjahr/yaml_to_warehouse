@@ -13,9 +13,15 @@
   <author email="mark@picknik.ai">Mark Moll</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
   <depend>libfmt</depend>
   <depend>yaml-cpp</depend>
+  <depend>Eigen3</depend>
+  <depend>geometry_msgs</depend>
+  <depend>geometric_shapes</depend>
+  <depend>moveit_msgs</depend>
   <depend>moveit_ros_warehouse</depend>
+  <depend>warehouse_ros</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
