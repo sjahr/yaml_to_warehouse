@@ -66,7 +66,7 @@ int main(int argc, char** argv)
   boost::program_options::options_description desc;
   desc.add_options()
       ("help", "Show help message")
-      ("directory", boost::program_options::value<std::string>()->default_value("/home/mmoll/ws_benchmarkdb/src/yaml_to_warehouse/data"),
+      ("directory", boost::program_options::value<std::string>()->default_value("/home/sebastian/ws_moveit2_project/src/panda_roboflex_examples/"),
                     "Name of directory containing motion planning benchmarks.")
       ("num", boost::program_options::value<unsigned int>()->default_value(10u),
               "Number of motion planning benchmarks to process.")
@@ -94,13 +94,6 @@ int main(int argc, char** argv)
   if (!conn->connect())
     return 1;
 
-  //   planning_scene_monitor::PlanningSceneMonitor psm(node, ROBOT_DESCRIPTION);
-  //   if (!psm.getPlanningScene())
-  //   {
-  //     RCLCPP_ERROR(LOGGER, "Unable to initialize PlanningSceneMonitor");
-  //     return 1;
-  //   }
-
   moveit_warehouse::PlanningSceneStorage pss(conn);
   moveit_msgs::msg::PlanningScene scene_msg;
   moveit_msgs::msg::MotionPlanRequest request_msg;
@@ -108,30 +101,47 @@ int main(int argc, char** argv)
   unsigned num = vm["num"].as<unsigned int>();
   std::string path = vm["directory"].as<std::string>();
 
-  for (unsigned i = 1; i <= num; ++i)
-  {
-    std::string scene = fmt::format("{}/scene{:04}.yaml", path, i);
-    std::string scene_sensed = fmt::format("{}/scene_sensed{:04}.yaml", path, i);
-    std::string request = fmt::format("{}/request{:04}.yaml", path, i);
-    std::string trajectory = fmt::format("{}/trajectory{:04}.yaml", path, i);
+  std::vector<std::string> scenario_names = { "bookshelf_small_panda", "bookshelf_tall_panda",
+                                              "bookshelf_thin_panda",  "box_panda",
+                                              "box_panda_flipped",     "cage_panda",
+                                              "kitchen_panda",         "table_bars_panda",
+                                              "table_pick_panda",      "table_under_pick_panda" };
 
-    if (yaml_msg::fromYAMLFile(scene_msg, scene))
+  for (auto const& scenario_name : scenario_names)
+  {
+    for (unsigned i = 1; i <= num; ++i)
     {
-      scene_msg.name = fmt::format("scene{}", i);
+      std::string scene = fmt::format("{}/{}/scene{:04}.yaml", path, scenario_name, i);
+      std::string scene_sensed = fmt::format("{}/{}/scene_sensed{:04}.yaml", path, scenario_name, i);
+      std::string request = fmt::format("{}/{}/request{:04}.yaml", path, scenario_name, i);
+      std::string trajectory = fmt::format("{}/{}/trajectory{:04}.yaml", path, scenario_name, i);
+
+      if (yaml_msg::fromYAMLFile(scene_msg, scene))
+      {
+        scene_msg.name = fmt::format("{}_scene{}", scenario_name, i);
+      }
+      if (yaml_msg::fromYAMLFile(scene_msg, scene_sensed))
+      {
+        scene_msg.name = fmt::format("{}_scene_sensed{}", scenario_name, i);
+      }
+      pss.addPlanningScene(scene_msg);
+      if (yaml_msg::fromYAMLFile(request_msg, request))
+      {
+        std::cout << "Add planning query" << std::endl;
+        pss.addPlanningQuery(request_msg, scene_msg.name, scene_msg.name + "_query");
+        if (yaml_msg::fromYAMLFile(trajectory_msg, trajectory))
+        {
+          std::cout << "Add planning result" << std::endl;
+          pss.addPlanningResult(request_msg, trajectory_msg, scene);
+        }
+      }
+      else
+      {
+        std::cout << "No planning query found" << std::endl;
+      }
+      std::cout << "Added scene '" << scene_msg.name << "' with query '" << scene_msg.name + "_query"
+                << "'" << std::endl;
     }
-    if (yaml_msg::fromYAMLFile(scene_msg, scene_sensed))
-    {
-      scene_msg.name = fmt::format("scene_sensed{}", i);
-    }
-    pss.addPlanningScene(scene_msg);
-    if (yaml_msg::fromYAMLFile(request_msg, request) && yaml_msg::fromYAMLFile(trajectory_msg, trajectory))
-    {
-      pss.addPlanningQuery(request_msg, scene_msg.name, scene_msg.name + "_query");
-      pss.addPlanningResult(request_msg, trajectory_msg, scene);
-    }
-    std::cout << scene_msg.name << '\n' << scene_sensed << '\n' << request << '\n' << trajectory << std::endl;
-    std::cout << "================================================================================================="
-              << std::endl;
   }
 
   rclcpp::executors::SingleThreadedExecutor executor;
